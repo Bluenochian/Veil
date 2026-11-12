@@ -1,0 +1,26 @@
+[Desktop Entry]
+Type=Application
+Name=Veil
+GenericName=Browser Visibility Companion
+Comment=Local browser visibility control and encrypted bookmark vault
+Exec=veil tray
+Icon=veil
+Terminal=false
+Categories=Utility;Security;System;
+StartupNotify=false
+X-GNOME-Autostart-enabled=true
+X-KDE-autostart-after=panel
+Keywords=privacy;shield;security;veil;filter;incognito;vault;
+Actions=Toggle;Panic;BossKey;
+
+[Desktop Action Toggle]
+Name=Toggle Privacy Shield
+Exec=veil toggle
+
+[Desktop Action Panic]
+Name=Emergency Panic
+Exec=veil panic
+
+[Desktop Action BossKey]
+Name=Boss Key (Stealth)
+Exec=veil boss-key

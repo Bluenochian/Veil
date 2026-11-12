@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Veil Privacy Companion",
+  "version": "1.0",
+  "description": "Local-first browser visibility control for Linux desktops.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlcH0vOWXzTXkh1hGndJ5f29lKeexuzGg5t4krugMQqGrteLadmGlZDH22b4hnzaLoZqB67k49j/XtHbOlkLBRmItBTKCSMVirr8L0fe/MRl/4U8VdZ9aZQdbZlEPRuiqs+6hE8VPZLRXODz2TiCRhOndCodFo00ymLcwsGqwiGjxoybujWDMeK7oX87MtoJFJ7jzRgUAU4rew59hhsoLVLcVJADJHYcJOHTtAzj2gCrPVD6oDrSArGL17D7vbCY9COKVfwsR4DyCIO4UU9gEtlaeeVVBJAmEe3UoxfzkBMkuWIuY0/TI0+pBdST2caOtkuwJuW7qMhChtfSNAsFBuQIDAQAB",
+  "permissions": [
+    "bookmarks",
+    "tabs",
+    "nativeMessaging",
+    "storage"
+  ],
+  "background": {
+    "service_worker": "veil-worker.js"
+  },
+  "action": {
+    "default_title": "Veil Privacy Companion"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

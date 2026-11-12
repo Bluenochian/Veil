@@ -1,0 +1,58 @@
+name: Bundle offline domain index
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/bundle-domains.yml'
+      - 'scripts/build_domain_index.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bundle-index:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build pinned offline domain database
+        run: python scripts/build_domain_index.py
+      - name: Check database schema, count, and lookups
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import sqlite3
+          path = Path('veil/data/adult_domains.db')
+          with sqlite3.connect(f'file:{path}?mode=ro', uri=True) as db:
+              n = db.execute('SELECT COUNT(*) FROM domains').fetchone()[0]
+              assert n == 953393, n
+              assert db.execute("SELECT domain FROM domains WHERE domain = '0----q.tumblr.com'").fetchone()
+              assert db.execute("PRAGMA quick_check").fetchone()[0] == 'ok'
+          from veil.classifier import UniversalClassifier
+          classifier = UniversalClassifier()
+          try:
+              result = classifier.classify_url('https://0----q.tumblr.com')
+              assert result.is_sensitive and result.reason.startswith('Database match:'), result
+          finally:
+              classifier.close()
+          print(f'Verified bundled SQLite index: {n:,} unique domains ({path.stat().st_size:,} bytes)')
+          PY
+      - name: Commit distributable index to main
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f veil/data/adult_domains.db
+          if ! git diff --cached --quiet; then
+            git commit -m "Bundle verified offline adult-domain index"
+            git push origin HEAD:main
+          else
+            echo 'Domain index already matches pinned source'
+          fi

@@ -1,0 +1,202 @@
+:root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0;overflow:hidden}
+body{
+  --breath:13s;
+  --tone:171,101,235;
+  --soft:203,156,255;
+  --edge:#c799ee;
+  --deep:#100b17;
+  --ink:#f6eeff;
+  --muted:#cbb7d9;
+  background:var(--deep);color:var(--ink);transition:background-color 1.15s ease,color 1.15s ease;
+}
+body[data-mode="off"]{--tone:255,160,62;--soft:255,204,127;--edge:#f9c57e;--deep:#150e10;--ink:#fff3e4;--muted:#ddc2ad}
+.scene{position:relative;isolation:isolate;width:100%;height:100%;overflow:hidden;
+ background:
+  radial-gradient(ellipse 46% 39% at 50% 38%,rgba(var(--tone),.065),transparent 88%),
+  radial-gradient(ellipse 98% 73% at 50% 98%,rgba(var(--tone),.08),transparent 78%),
+  var(--deep);
+ transition:background-color 1.15s ease}
+.scene::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:9;box-shadow:inset 0 0 100px rgba(0,0,0,.18)}
+/* Space dust is BELOW the actual dome. It cannot appear on its foreground surface. */
+.particles{pointer-events:none;position:absolute;inset:0;overflow:hidden;z-index:1}
+.mote{position:absolute;left:var(--x);top:var(--y);width:var(--r);height:var(--r);border-radius:50%;
+ background:rgb(var(--soft));box-shadow:0 0 6px rgba(var(--tone),.52);opacity:0;
+ animation:mote-drift var(--dur) var(--delay) ease-in-out infinite}
+@keyframes mote-drift{
+  0%{opacity:0;transform:translate3d(0,18px,0) scale(.62)}
+  24%{opacity:var(--peak)}
+  62%{opacity:calc(var(--peak) * .65)}
+  100%{opacity:0;transform:translate3d(var(--dx),-145px,0) scale(.75)}
+}
+/* Broad dome: always substantial; a gentle <3% vertical inhale, never a huge rise. */
+.horizon{position:absolute;left:0;bottom:-1px;width:100%;height:78%;z-index:2;pointer-events:none;
+ transform-origin:center bottom;animation:tide var(--breath) ease-in-out infinite;will-change:transform}
+@keyframes tide{0%,100%{transform:scaleY(.978)}50%{transform:scaleY(1.025)}}
+.land{fill:url(#landGradient)}
+.land-top{animation:violet-top 19s ease-in-out infinite}
+.land-mid{animation:violet-mid 19s ease-in-out infinite}
+.land-bottom{animation:violet-bottom 19s ease-in-out infinite}
+body[data-mode="off"] .land-top{animation-name:gold-top;stop-color:#512e28}
+body[data-mode="off"] .land-mid{animation-name:gold-mid;stop-color:#321f20}
+body[data-mode="off"] .land-bottom{animation-name:gold-bottom;stop-color:#1c1115}
+@keyframes violet-top{0%,100%{stop-color:#39204f}35%{stop-color:#54296c}67%{stop-color:#3b275c}}
+@keyframes violet-mid{0%,100%{stop-color:#291839}50%{stop-color:#352044}}
+@keyframes violet-bottom{0%,100%{stop-color:#170e22}50%{stop-color:#1e112b}}
+@keyframes gold-top{0%,100%{stop-color:#512e28}50%{stop-color:#67402a}77%{stop-color:#4f2b30}}
+@keyframes gold-mid{0%,100%{stop-color:#321f20}50%{stop-color:#3a2420}}
+@keyframes gold-bottom{0%,100%{stop-color:#1c1115}50%{stop-color:#211217}}
+/* diffuse currents inside dome: wide soft glow clouds, not streaks */
+.current{mix-blend-mode:screen;transform-box:fill-box;transform-origin:center;filter:blur(64px)}
+.current.one{fill:rgba(var(--tone),.075);animation:current-one 24s ease-in-out infinite}
+.current.two{fill:rgba(var(--soft),.055);animation:current-two 30s ease-in-out infinite}
+@keyframes current-one{0%,100%{opacity:.45;transform:translate(-105px,45px) scale(.9)}50%{opacity:.95;transform:translate(125px,-35px) scale(1.1)}}
+@keyframes current-two{0%,100%{opacity:.8;transform:translate(145px,38px)}50%{opacity:.38;transform:translate(-105px,-26px)}}
+.rim-soft{fill:none;stroke:var(--edge);stroke-width:8;opacity:.18;filter:blur(11px);animation:rim-glow var(--breath) ease-in-out infinite}
+.rim{fill:none;stroke:var(--edge);stroke-width:1.7;opacity:.89;animation:rim-glow var(--breath) ease-in-out infinite}
+@keyframes rim-glow{0%,100%{opacity:.62}50%{opacity:.96}}
+/* Emblem and dome share a single breath cycle: shape stays still, light changes. */
+.hero{position:absolute;left:50%;top:10%;z-index:5;transform:translateX(-50%);display:flex;flex-direction:column;
+ align-items:center;width:min(600px,92vw);text-align:center}
+.logo{position:relative;width:clamp(215px,19vw,270px);height:clamp(215px,19vw,270px);
+ animation:logo-hover 11s ease-in-out infinite;transform-origin:center center}
+@keyframes logo-hover{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-3px,0)}}
+.emblem{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
+ filter:drop-shadow(0 0 13px rgba(var(--tone),.43));
+ transition:opacity .95s ease;animation:emblem-gleam var(--breath) ease-in-out infinite}
+@keyframes emblem-gleam{
+ 0%,100%{filter:drop-shadow(0 0 8px rgba(var(--tone),.32)) drop-shadow(0 0 13px rgba(var(--tone),.12)) brightness(.94)}
+ 50%{filter:drop-shadow(0 0 15px rgba(var(--tone),.74)) drop-shadow(0 0 29px rgba(var(--tone),.28)) brightness(1.10)}
+}
+.emblem.on{opacity:1}.emblem.off{opacity:0}
+body[data-mode="off"] .emblem.on{opacity:0}body[data-mode="off"] .emblem.off{opacity:1}
+h1{font-size:clamp(24px,2.15vw,33px);line-height:1.24;letter-spacing:-.025em;font-weight:640;margin:18px 0 9px}
+.description{font-size:clamp(12px,1.05vw,14px);max-width:510px;line-height:1.65;color:var(--muted);margin:0;padding:0 8px;text-wrap:balance}
+/* Restore the fine accent rules flanking the state caption; no motion-study copy. */
+.status{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:21px;
+ color:rgb(var(--soft));font-size:10px;font-weight:650;letter-spacing:.28em;white-space:nowrap;
+ text-shadow:0 0 12px rgba(var(--tone),.38);opacity:.88}
+.status::before,.status::after{content:"";display:block;width:37px;height:1px;flex:none;
+ background:linear-gradient(90deg,transparent,rgba(var(--soft),.64));}
+.status::after{transform:rotate(180deg)}
+
+/* Reveal is a deliberate one-click action, never a pulsing decorative control. */
+.reveal-area{display:flex;flex-direction:column;align-items:center;gap:11px;margin-top:17px;min-height:59px;
+ animation:reveal-arrive .46s cubic-bezier(.18,.77,.29,1) both}
+.reveal-area[hidden]{display:none!important}
+@keyframes reveal-arrive{from{opacity:0;transform:translateY(7px);filter:blur(3px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
+.reveal-button{position:relative;display:inline-flex;align-items:center;justify-content:space-between;gap:16px;
+ min-width:183px;min-height:44px;padding:0 15px 0 13px;border-radius:13px;
+ border:1px solid rgba(255,209,142,.44);background:linear-gradient(160deg,rgba(96,52,29,.65),rgba(44,27,27,.58) 66%,rgba(78,47,28,.72));
+ color:#ffe4b9;font:650 13px/1 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.04em;
+ box-shadow:inset 0 1px 0 rgba(255,226,166,.11),0 7px 24px rgba(0,0,0,.16),0 0 18px rgba(247,171,78,.045);
+ cursor:pointer;isolation:isolate;overflow:hidden;transform:translateZ(0);
+ transition:transform .21s ease,background .25s ease,border-color .25s ease,box-shadow .25s ease,color .25s ease}
+.reveal-button::before{position:absolute;inset:0;z-index:-1;content:"";pointer-events:none;
+ background:radial-gradient(ellipse 67% 130% at 7% 50%,rgba(255,196,111,.21),transparent 74%);opacity:.38;transition:opacity .25s}
+.reveal-button:hover{transform:translateY(-2px);border-color:rgba(255,217,158,.81);
+ background:linear-gradient(160deg,rgba(113,61,34,.82),rgba(53,30,27,.66) 66%,rgba(84,51,29,.84));
+ box-shadow:inset 0 1px 0 rgba(255,231,184,.21),0 10px 27px rgba(0,0,0,.22),0 0 22px rgba(247,171,78,.14)}
+.reveal-button:hover::before{opacity:1}
+.reveal-button:active{transform:translateY(0) scale(.985)}
+.reveal-button:focus-visible{outline:2px solid #ffe1b4;outline-offset:4px}
+.reveal-button[disabled]{cursor:progress;opacity:.76;transform:none}
+.reveal-icon{display:grid;place-items:center;width:27px;height:27px;flex:none;border-radius:8px;
+ background:rgba(255,193,109,.11);color:#ffd18d;border:1px solid rgba(255,212,146,.19)}
+.reveal-icon svg{width:18px;height:18px}
+.reveal-arrow{display:grid;place-items:center;color:#e9b879;opacity:.68;transform:translateX(0);
+ transition:transform .22s,opacity .22s}
+.reveal-arrow svg{width:15px;height:15px}
+.reveal-button:hover .reveal-arrow{transform:translateX(2px);opacity:1}
+.reveal-label{flex:1;text-align:left}
+.reveal-feedback{min-height:16px;max-width:360px;margin:0;text-align:center;font-size:11px;line-height:1.4;color:#e1ae89;}
+.reveal-feedback:empty{display:none}
+@media(max-width:650px){.hero{top:14%;width:96vw}.logo{width:205px;height:205px}h1{margin-top:15px}.description{max-width:360px;line-height:1.6}.status{gap:10px;margin-top:18px;font-size:9px}.status::before,.status::after{width:24px}.reveal-area{margin-top:19px}.horizon{height:75%}}
+@media(max-height:650px){.hero{top:6%}.logo{width:170px;height:170px}h1{margin-top:9px}.status{margin-top:12px}.reveal-area{margin-top:14px}.reveal-button{min-height:42px}.horizon{height:70%}}
+@media(max-height:460px){.hero{top:3%}.logo{width:120px;height:120px}.status{display:none}.reveal-area{margin-top:8px}.reveal-button{min-height:37px}.horizon{height:60%}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.mote{display:none}.horizon{transform:scaleY(1)}}
+
+/* V5 — deliberately crossfade entire art layers instead of instantly swapping untyped CSS variables.
+   Both dome copies breathe with the same keyframe and phase; same shape, same viewBox. */
+:root{--morph:1.45s;--text-morph:.8s;}
+body{background-color:#100b17;transition:color var(--morph) ease,background-color var(--morph) ease}
+body[data-mode="off"]{background-color:#150e10}
+.scene{
+ background:radial-gradient(ellipse 46% 39% at 50% 38%,rgba(171,101,235,.065),transparent 88%),
+ radial-gradient(ellipse 98% 73% at 50% 98%,rgba(171,101,235,.08),transparent 78%),#100b17;
+}
+.scene::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+ background:radial-gradient(ellipse 46% 39% at 50% 38%,rgba(255,160,62,.065),transparent 88%),
+ radial-gradient(ellipse 98% 73% at 50% 98%,rgba(255,160,62,.08),transparent 78%),#150e10;
+ opacity:0;transition:opacity var(--morph) cubic-bezier(.42,0,.25,1)}
+body[data-mode="off"] .scene::before{opacity:1}
+.horizon{opacity:1;transition:opacity var(--morph) cubic-bezier(.42,0,.25,1);}
+.horizon-on{opacity:1}.horizon-off{opacity:0}
+body[data-mode="off"] .horizon-on{opacity:0}
+body[data-mode="off"] .horizon-off{opacity:1}
+/* Lock each surface to its own palette, regardless of global mode. */
+.horizon-on .land-top{animation-name:violet-top!important}
+.horizon-on .land-mid{animation-name:violet-mid!important}
+.horizon-on .land-bottom{animation-name:violet-bottom!important}
+.horizon-off .land-top{animation-name:gold-top!important}
+.horizon-off .land-mid{animation-name:gold-mid!important}
+.horizon-off .land-bottom{animation-name:gold-bottom!important}
+.horizon-on .rim,.horizon-on .rim-soft{stroke:#c799ee}
+.horizon-off .rim,.horizon-off .rim-soft{stroke:#f9c57e}
+.horizon-on .current.one{fill:rgba(171,101,235,.075)}
+.horizon-on .current.two{fill:rgba(203,156,255,.055)}
+.horizon-off .current.one{fill:rgba(255,160,62,.075)}
+.horizon-off .current.two{fill:rgba(255,204,127,.055)}
+/* Glow color also stays permanently attached to each icon, avoiding a mid-crossfade flicker. */
+.emblem.on{--icon-tone:171,101,235}
+.emblem.off{--icon-tone:255,160,62}
+.emblem{transition:opacity 1.3s cubic-bezier(.42,0,.25,1)}
+@keyframes emblem-gleam{
+ 0%,100%{filter:drop-shadow(0 0 8px rgba(var(--icon-tone),.32)) drop-shadow(0 0 13px rgba(var(--icon-tone),.12)) brightness(.94)}
+ 50%{filter:drop-shadow(0 0 15px rgba(var(--icon-tone),.74)) drop-shadow(0 0 29px rgba(var(--icon-tone),.28)) brightness(1.10)}
+}
+/* Permanent layout slots: copy fades in-place, without abrupt relayout or overlapping lines. */
+.headline-stack,.description-stack,.status-stack{display:grid;justify-items:center;width:100%;}
+.headline-stack>* , .description-stack>* , .status-stack>*{grid-area:1/1}
+.headline-stack{margin-top:0}
+.headline-stack h1{margin:18px 0 9px}
+.description-stack{max-width:510px}
+.description-stack p{width:100%}
+.status-stack{margin-top:21px}
+.status-stack .status{margin-top:0}
+.copy-on,.copy-off{transition:opacity var(--text-morph) ease,transform var(--text-morph) ease,filter var(--text-morph) ease;
+ backface-visibility:hidden;}
+.copy-on{opacity:1;transform:translateY(0);filter:blur(0)}
+.copy-off{opacity:0;transform:translateY(5px);filter:blur(3px);pointer-events:none}
+body[data-mode="off"] .copy-on{opacity:0;transform:translateY(-5px);filter:blur(3px);pointer-events:none}
+body[data-mode="off"] .copy-off{opacity:1;transform:translateY(0);filter:blur(0);pointer-events:auto}
+/* Rules beside captions follow the fixed palette for each copy. */
+.status.copy-on{color:#cba2fa;text-shadow:0 0 12px rgba(171,101,235,.38)}
+.status.copy-off{color:#ffcc7f;text-shadow:0 0 12px rgba(255,160,62,.38)}
+.status.copy-on::before,.status.copy-on::after{background:linear-gradient(90deg,transparent,rgba(203,162,250,.64))}
+.status.copy-off::before,.status.copy-off::after{background:linear-gradient(90deg,transparent,rgba(255,204,127,.64))}
+/* Button is revealed only after the icon and words have started settling. */
+.reveal-area{visibility:hidden;opacity:0;pointer-events:none;margin-top:0;min-height:0;max-height:0;
+ transform:translateY(10px);overflow:visible;animation:none!important;
+ transition:opacity .67s ease,transform .67s ease,max-height .8s ease,margin-top .8s ease,visibility 0s linear .8s;}
+body[data-mode="off"] .reveal-area{visibility:visible;opacity:1;pointer-events:auto;margin-top:17px;max-height:108px;min-height:0;
+ transform:translateY(0);transition-delay:.48s,.48s,.1s,.1s,0s;}
+.reveal-area:focus-within{visibility:visible}
+/* Keep the particle glow in sync with the horizon crossfade. */
+.mote{background:#d5b5ff;box-shadow:0 0 6px rgba(171,101,235,.45);
+ transition:background-color var(--morph) ease,box-shadow var(--morph) ease}
+body[data-mode="off"] .mote{background:#ffd59b;box-shadow:0 0 6px rgba(255,160,62,.45)}
+.hero{transition:opacity .42s ease,transform .42s ease}
+.scene.is-revealing .hero{opacity:0;transform:translate(-50%,5px)}
+.scene.is-revealing .horizon{opacity:0!important;transition-duration:.42s}
+.particles{transition:opacity .42s ease}
+.scene.is-revealing .particles{opacity:0}
+@media(max-width:650px){.description-stack{max-width:360px}.status-stack{margin-top:18px}.headline-stack h1{margin-top:15px}}
+@media(max-height:650px){.status-stack{margin-top:12px}.headline-stack h1{margin-top:9px}body[data-mode="off"] .reveal-area{margin-top:14px}}
+@media(max-height:460px){.status-stack{display:none}body[data-mode="off"] .reveal-area{margin-top:8px}}
+@media(prefers-reduced-motion:reduce){.copy-on,.copy-off{transform:none!important;filter:none!important}.reveal-area{transition:none!important}}
+
+
+body.is-background .scene{content-visibility:hidden}
+body.is-background *,body.is-background *::before,body.is-background *::after{animation-play-state:paused!important}

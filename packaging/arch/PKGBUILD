@@ -1,0 +1,39 @@
+# Maintainer: Bluenochian (https://github.com/Bluenochian)
+pkgname=veil
+pkgver=1.0
+pkgrel=1
+pkgdesc="Local Linux browser privacy companion"
+arch=('any')
+url="https://github.com/Bluenochian/Veil"
+license=('custom:PolyForm-Noncommercial-1.0.0')
+depends=('python' 'python-pyside6' 'python-cryptography' 'libsecret' 'libnotify' 'wl-clipboard' 'xclip')
+makedepends=('python-setuptools' 'python-build' 'python-installer' 'python-wheel')
+optdepends=(
+    'brave-bin: Supported Chromium browser'
+    'google-chrome: Supported Chromium browser'
+    'firefox: Supported Mozilla browser'
+)
+source=("Veil-v$pkgver-release.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+    cd "$srcdir/Veil"
+    python -m build --wheel --no-isolation
+}
+
+package() {
+    cd "$srcdir/Veil"
+    python -m installer --destdir="$pkgdir" dist/*.whl
+
+    install -Dm644 packaging/desktop/veil.desktop "$pkgdir/usr/share/applications/veil.desktop"
+    install -Dm644 packaging/systemd/veil.service "$pkgdir/usr/lib/systemd/user/veil.service"
+    
+    for size in 16 22 24 32 48 64 128 256 512 1024; do
+        if [ -f "assets/icons/veil-on-${size}.png" ]; then
+            install -Dm644 "assets/icons/veil-on-${size}.png" "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps/veil.png"
+        fi
+        if [ -f "assets/icons/veil-off-${size}.png" ]; then
+            install -Dm644 "assets/icons/veil-off-${size}.png" "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps/veil-off.png"
+        fi
+    done
+}
