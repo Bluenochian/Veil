@@ -14,15 +14,16 @@ RESET="\033[0m"
 echo -e "${RED}✦ Veil Uninstallation Utility${RESET}"
 
 # Stop systemd service
-if systemctl --user is-active --quiet veil.service 2>/dev/null; then
-    echo "Stopping veil.service..."
-    systemctl --user stop veil.service || true
-    systemctl --user disable veil.service || true
+if command -v systemctl >/dev/null 2>&1 && systemctl --user show-environment >/dev/null 2>&1; then
+    systemctl --user disable --now veil.service || true
 fi
 
 # Remove autostart and desktop files
 rm -f "${HOME}/.config/autostart/veil.desktop"
 rm -f "${HOME}/.config/systemd/user/veil.service"
+if command -v systemctl >/dev/null 2>&1; then
+    systemctl --user daemon-reload >/dev/null 2>&1 || true
+fi
 rm -f "${HOME}/.local/share/applications/veil.desktop"
 
 # Remove binaries and installed application sources

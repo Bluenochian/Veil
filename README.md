@@ -20,7 +20,7 @@
   <a href="#how-it-works">How it works</a> ·
   <a href="#limits">Limitations</a> ·
   <a href="#documentation">Docs</a> ·
-  <a href="https://github.com/Bluenochian/Veil/releases/tag/v1.0">Release 1.0</a>
+  <a href="https://github.com/Bluenochian/Veil/releases/tag/v1.0.1">Release 1.0.1</a>
 </p>
 
 ---

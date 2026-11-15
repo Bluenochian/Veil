@@ -1,52 +1,15 @@
-# Veil 1.0 — hide it, bring it back, carry on
+# Veil 1.0.1
 
-I wanted one button that could get certain tabs and bookmarks out of sight without turning the browser into a crime scene afterward. Turns out the **bringing them back** part is where things get interesting.
+Apparently surviving a reboot and clicking the tray icon once were both asking too much. Fixed that.
 
-So here's Veil: a small Linux tray companion, a browser extension, and a local encrypted vault. Hit the switch, matching tabs get a pause page and matching bookmarks can be vaulted. Switch back, and Veil tries to put everything where it belongs.
+- The tray now starts through the user systemd service where available. If it crashes, systemd can bring it back. Other desktops still get normal autostart.
+- Plasma's occasional double-click nonsense should no longer flip the switch twice.
+- A failing browser profile won't stop the other profiles. When one reports an error, you'll actually hear about it now.
 
-Pretty simple on paper. Famous last words.
+The OFF password is still required. The vault, extension behavior and artwork aren't changing for this update.
 
-## What's actually in here
+If you're upgrading, back up `~/.config/veil/` first and run `bash scripts/install.sh` again. Don't delete `veil.key` if you're still migrating the old wallet key. If the tray was already open during installation, restart it or log out and back in for the new startup setup.
 
-- **One-click ON, password-protected OFF**, through the tray or CLI. The desktop service checks the password too, so another way of sending the command won't skip it.
-- **Chrome-family and Firefox support**, with their own background-script loading paths. Firefox add-ons loaded through `about:debugging` are temporary and disappear when Firefox restarts; signed store versions aren't included here.
-- **Encrypted recovery records**, native messaging and a local daemon. No cloud account needed.
-- **Local matching rules** for sensitive destinations, plus allowlists and blocklists.
-- **Batched tab operations** for people with an unreasonable number of tabs open. I'm not judging.
-- **Portable encrypted backups**, plus installer paths for common Linux distro families.
+Source and unpacked extensions only, as before. And please test with a spare browser profile first, because browsers are really good at inventing new ways to be annoying.
 
-## Passwords, keys and backups
-
-When Veil is active, turning it OFF asks for an unlock password. Set or change it under **Preferences → Set / Change Unlock Password** or with `veil lock set`. Cancel the prompt or enter the wrong password, and it stays ON. The timer can remind you to unlock it, but it won't switch protection off behind your back.
-
-The live AES-256 key now goes into **KDE Wallet or GNOME Keyring** via `secret-tool`, instead of sitting in a plaintext `veil.key` right next to `vault.db`. Existing keys are migrated only after Veil reads the same key back from the wallet. If that fails, it leaves the original alone. Losing your vault because the wallet had a bad day would be a pretty terrible feature.
-
-New `.veilvault` exports use **scrypt** and require a passphrase of at least 16 characters. Old PBKDF2 backups can still be imported. Damaged encrypted records now raise a visible error instead of quietly becoming empty URLs.
-
-The extension also has tighter paused-page exposure, and Firefox no longer tries to load a Chromium worker in its background page.
-
-## If you're upgrading, read this bit
-
-1. **Stop** the old Veil tray and service first.
-2. Preserve a copy of `~/.config/veil/`. Better yet, make a separate encrypted `.veilvault` backup too.
-3. Install `secret-tool` and unlock your KDE Wallet or GNOME Keyring.
-4. Start the new Veil. It moves the existing encryption key into your wallet **only after verifying it**.
-
-**Don't delete `veil.key` yourself** to speed things along. And don't lose your backup. The wallet now holds the live vault key, so copying `vault.db` alone won't be enough on another computer.
-
-[Installation and wallet guide](https://github.com/Bluenochian/Veil/blob/v1.0/docs/INSTALLATION.md#desktop-wallet-setup-and-safe-upgrades) · [Recovery notes](https://github.com/Bluenochian/Veil/blob/v1.0/docs/RECOVERY.md)
-
-## A few things Veil is *not*
-
-It's not an anonymity tool, a browser-history cleaner, or protection from someone who controls your already-unlocked computer. A page may also flash briefly before the extension catches it. And no, a successful CI run isn't the same thing as having tested every browser and Linux desktop on earth.
-
-**Start with a spare browser profile**, especially if you care about your bookmarks. The automated tests cover storage and simulated extension behavior, but live KDE/GNOME wallet migration, Firefox signing, and non-Fedora desktops still need real testing.
-
-## Download and licensing
-
-This release contains **source code and unpacked extensions**, not signed browser-store packages. It uses [PolyForm Noncommercial 1.0.0](https://github.com/Bluenochian/Veil/blob/v1.0/LICENSE); the bundled offline domain list has its [own license and attribution](https://github.com/Bluenochian/Veil/blob/v1.0/DATA_LICENSE.md).
-
-The dramatic banner is AI-generated. Some of the README got AI help too. The bugs and responsibility? Those are still mine.
-
-Anyway, enjoy. And if something breaks, open an issue with a redacted log instead of posting your actual browsing history. Seriously.
-
+[Installation notes](https://github.com/Bluenochian/Veil/blob/v1.0.1/docs/INSTALLATION.md) · [Recovery](https://github.com/Bluenochian/Veil/blob/v1.0.1/docs/RECOVERY.md) · [Licenses](https://github.com/Bluenochian/Veil/blob/v1.0.1/LICENSE)

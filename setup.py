@@ -19,7 +19,7 @@ class build_py(setuptools_build_py):
 setup(
     name="veil",
     cmdclass={"build_py": build_py},
-    version="1.0",
+    version="1.0.1",
     description="Linux browser privacy companion",
     author="Bluenochian",
     packages=find_packages(),

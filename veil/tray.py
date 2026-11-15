@@ -14,6 +14,7 @@ os.environ["KSNI_NO_DBUSMENU"] = "1"
 
 import logging
 import subprocess
+import time
 from pathlib import Path
 from veil.paths import icon_directory
 from PySide6 import QtWidgets, QtGui, QtCore, QtDBus
@@ -648,29 +649,39 @@ class VeilTrayApp(QtWidgets.QApplication):
         return True
 
     def _do_toggle(self):
-        if not self.service.is_active:
-            self.service.activate()
-            self._play_sound(True)
-            return
-        if not self.service.unlock_guard.configured:
-            QtWidgets.QMessageBox.information(
-                None, "Veil · Set your unlock password",
-                "Protection stays ON until you set an unlock password."
-            )
-            if not self._configure_unlock_password():
-                return
-        password, ok = QtWidgets.QInputDialog.getText(
-            None, "Veil · Unlock", "Enter password to turn protection OFF:",
-            QtWidgets.QLineEdit.EchoMode.Password
-        )
-        if not ok:
-            return
+        now = time.monotonic()
+        if now - getattr(self, "_last_click_at", -10.0) < 0.4:
+            return  # Plasma sometimes sends two activations for one click.
+        self._last_click_at = now
         try:
-            self.service.deactivate(password=password)
-        except AccessDenied as exc:
-            QtWidgets.QMessageBox.warning(None, "Veil · Still protected", str(exc))
-            return
-        self._play_sound(False)
+            if not self.service.is_active:
+                self.service.activate()
+                self._play_sound(True)
+                return
+            if not self.service.unlock_guard.configured:
+                QtWidgets.QMessageBox.information(
+                    None, "Veil · Set your unlock password",
+                    "Protection stays ON until you set an unlock password."
+                )
+                if not self._configure_unlock_password():
+                    return
+            password, ok = QtWidgets.QInputDialog.getText(
+                None, "Veil · Unlock", "Enter password to turn protection OFF:",
+                QtWidgets.QLineEdit.EchoMode.Password
+            )
+            if not ok:
+                return
+            try:
+                self.service.deactivate(password=password)
+            except AccessDenied as exc:
+                QtWidgets.QMessageBox.warning(None, "Veil · Still protected", str(exc))
+                return
+            self._play_sound(False)
+        except Exception as exc:
+            QtWidgets.QMessageBox.warning(None, "Veil · Couldn't switch", str(exc))
+        finally:
+            # A queued click shouldn't reverse the state after the password prompt.
+            self._last_click_at = time.monotonic()
 
     def _play_sound(self, is_active: bool):
         if not self.sound_enabled:
@@ -741,6 +752,8 @@ class VeilTrayApp(QtWidgets.QApplication):
 
     def _on_service_state_changed(self, is_active: bool, message: str):
         self._update_tray_ui(is_active, show_notification=False)
+        if "some browser profiles could not" in message:
+            QtWidgets.QMessageBox.warning(None, "Veil · Browser recovery", message)
 
     def _update_tray_ui(self, is_active: bool, show_notification: bool = False):
         try:

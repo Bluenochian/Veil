@@ -1,3 +1,10 @@
+veil (1.0.1) unstable; urgency=medium
+
+  * Fix login startup and duplicate panel clicks.
+  * Report browser-profile errors without skipping the other profiles.
+
+ -- Bluenochian <33797102+Bluenochian@users.noreply.github.com>  Sun, 15 Nov 2026 20:00:00 +0300
+
 veil (1.0) unstable; urgency=medium
 
   * Package portable Veil daemon and extension resources.

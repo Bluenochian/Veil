@@ -35,6 +35,7 @@ class VeilService:
 
         self.is_active: bool = bool(self.vault.get_state("is_active", False))
         self.activated_at: float | None = time.time() if self.is_active else None
+        self._last_operation_warnings: list[str] = []
 
         # The timer can remind you to unlock; it cannot switch Veil off.
         self._timer: threading.Timer | None = None
@@ -99,12 +100,15 @@ class VeilService:
                 }
 
     def _state_payload(self):
-        return {
+        state = {
             "type": "state", "active": self.is_active,
             "reveal_on_demand": self._reveal_on_demand(),
             "unlock_password_enabled": self.unlock_guard.configured,
             "rules": {"whitelist": self.classifier.whitelist, "blacklist": self.classifier.blacklist},
         }
+        if self._last_operation_warnings:
+            state["warnings"] = self._last_operation_warnings[:]
+        return state
 
     def _dispatch_ipc_message(self, msg: dict, client_sock: Any = None) -> dict | None:
         if not isinstance(msg, dict):
@@ -128,7 +132,8 @@ class VeilService:
                 "unlock_password_enabled": self.unlock_guard.configured,
                 "uptime": int(time.time() - self.activated_at) if (self.is_active and self.activated_at) else 0,
                 "counts": counts,
-                "timer_remaining": max(0, int(self._timer_end - time.time())) if self._timer_end else None
+                "timer_remaining": max(0, int(self._timer_end - time.time())) if self._timer_end else None,
+                **({"warnings": self._last_operation_warnings[:]} if self._last_operation_warnings else {}),
             }
 
         elif mtype == "unlock_status":
@@ -389,14 +394,24 @@ class VeilService:
         with self._state_lock:
             if self.is_active:
                 return
+            # A failed vault write isn't permission to claim we turned ON.
+            self.vault.set_state("is_active", True)
             self.is_active = True
             self.activated_at = time.time()
-            self.vault.set_state("is_active", True)
-            self.profile_manager.conceal_all(self.classifier)
+            try:
+                result = self.profile_manager.conceal_all(self.classifier)
+            except VaultDecryptionError:
+                # Still tell connected extensions to veil tabs. The vault error
+                # goes back to the caller; we don't claim concealment succeeded.
+                self._last_operation_warnings = ["Encrypted browser records couldn't be read"]
+                self.ipc.broadcast(self._state_payload())
+                raise
+            self._last_operation_warnings = result.get("errors", []) if isinstance(result, dict) else []
             self.ipc.broadcast(self._state_payload())
             self.sanitize_clipboard()
             if self.on_state_changed:
-                self.on_state_changed(True, "Shield Active")
+                message = "Shield Active" if not self._last_operation_warnings else "Shield Active, but some browser profiles could not be updated: " + ", ".join(self._last_operation_warnings)
+                self.on_state_changed(True, message)
 
     def deactivate(self, password: str | None = None):
         with self._state_lock:
@@ -404,17 +419,27 @@ class VeilService:
                 return
             # Every OFF path goes through the service, not just the tray UI.
             self.unlock_guard.verify(password)
+            self.vault.set_state("is_active", False)
             self.is_active = False
             self.activated_at = None
-            self.vault.set_state("is_active", False)
+            try:
+                result = self.profile_manager.restore_all()
+            except VaultDecryptionError:
+                # If decryption fails, don't send an OFF signal with records
+                # we can't actually restore. Keep the stored ON state as well.
+                self.vault.set_state("is_active", True)
+                self.is_active = True
+                self.activated_at = time.time()
+                raise
             if self._timer:
                 self._timer.cancel()
                 self._timer = None
                 self._timer_end = None
-            self.profile_manager.restore_all()
+            self._last_operation_warnings = result.get("errors", []) if isinstance(result, dict) else []
             self.ipc.broadcast(self._state_payload())
             if self.on_state_changed:
-                self.on_state_changed(False, "Standby")
+                message = "Standby" if not self._last_operation_warnings else "Standby, but some browser profiles could not be restored: " + ", ".join(self._last_operation_warnings)
+                self.on_state_changed(False, message)
 
     def sanitize_clipboard(self) -> bool:
         """Clear matching content from the clipboard."""

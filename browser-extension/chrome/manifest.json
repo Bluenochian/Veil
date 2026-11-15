@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Veil Privacy Companion",
-  "version": "1.0",
+  "version": "1.0.1",
   "description": "Local-first browser visibility control for Linux desktops.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlcH0vOWXzTXkh1hGndJ5f29lKeexuzGg5t4krugMQqGrteLadmGlZDH22b4hnzaLoZqB67k49j/XtHbOlkLBRmItBTKCSMVirr8L0fe/MRl/4U8VdZ9aZQdbZlEPRuiqs+6hE8VPZLRXODz2TiCRhOndCodFo00ymLcwsGqwiGjxoybujWDMeK7oX87MtoJFJ7jzRgUAU4rew59hhsoLVLcVJADJHYcJOHTtAzj2gCrPVD6oDrSArGL17D7vbCY9COKVfwsR4DyCIO4UU9gEtlaeeVVBJAmEe3UoxfzkBMkuWIuY0/TI0+pBdST2caOtkuwJuW7qMhChtfSNAsFBuQIDAQAB",
   "permissions": [

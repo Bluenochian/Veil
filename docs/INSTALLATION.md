@@ -178,3 +178,16 @@ Review [scripts/uninstall.sh](../scripts/uninstall.sh) before running. Export va
 
 > [!NOTE]
 > Veil includes its offline adult-domain index automatically; no separate list download or manual database setup is needed. See [data licensing](../DATA_LICENSE.md).
+
+## Starting Veil after a reboot
+
+`bash scripts/install.sh` configures login startup. On desktops with a working user systemd manager, the tray is supervised by `veil.service`. The desktop autostart entry only starts that unit; it doesn't launch a second tray. Other desktops use the ordinary XDG autostart entry instead.
+
+To check why the icon didn't return after login:
+
+```bash
+systemctl --user status veil.service
+journalctl --user -u veil.service -n 50 --no-pager
+```
+
+`veil autostart --enable` sets it back up; `veil autostart --disable` disables future startup without killing the tray you are using. If you installed an update with an existing tray already running, quit it normally (unlock first if protected), or log out and back in. Avoid starting another copy by hand while the service is running.

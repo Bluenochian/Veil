@@ -1,6 +1,9 @@
 """Look for browser profiles. Finding one doesn't mean the extension is connected."""
 
 from pathlib import Path
+import logging
+
+from veil.crypto import VaultDecryptionError
 
 from veil.browsers.base import BrowserProfile
 from veil.browsers.chromium import ChromiumBrowserManager
@@ -78,21 +81,30 @@ class UniversalProfileManager:
 
         return profiles
 
-    def conceal_all(self, classifier) -> dict:
+    def _run_for_profiles(self, operation, classifier=None) -> dict:
         totals = {"bookmarks": 0, "history": 0, "top_sites": 0}
+        missed = []
         for manager in self.managers:
-            counts = manager.conceal_all(classifier)
-            for kind in totals:
-                totals[kind] += counts.get(kind, 0)
+            try:
+                counts = (manager.conceal_all(classifier) if operation == "conceal"
+                          else manager.restore_all())
+                for kind in ("bookmarks", "history", "top_sites"):
+                    totals[kind] += counts.get(kind, 0)
+            except VaultDecryptionError:
+                raise  # Never turn a broken vault key into an ordinary browser hiccup.
+            except Exception as exc:
+                name = f"{manager.profile.browser_name} / {manager.profile.profile_name}"
+                logging.getLogger(__name__).warning("Browser %s failed for %s: %s", operation, name, type(exc).__name__)
+                missed.append(name)
+        if missed:
+            totals["errors"] = missed
         return totals
 
+    def conceal_all(self, classifier) -> dict:
+        return self._run_for_profiles("conceal", classifier)
+
     def restore_all(self) -> dict:
-        totals = {"bookmarks": 0, "history": 0, "top_sites": 0}
-        for manager in self.managers:
-            counts = manager.restore_all()
-            for kind in totals:
-                totals[kind] += counts.get(kind, 0)
-        return totals
+        return self._run_for_profiles("restore")
 
     def shred_all_caches(self) -> dict[str, int]:
         counts = {}

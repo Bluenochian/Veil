@@ -1,5 +1,5 @@
 Name:           veil
-Version:        1.0
+Version:        1.0.1
 Release:        1%{?dist}
 Summary:        Local Linux browser privacy companion
 
@@ -47,5 +47,7 @@ install -D -p -m 0644 packaging/systemd/veil.service %{buildroot}%{_userunitdir}
 %{_userunitdir}/veil.service
 
 %changelog
+* Sun Nov 15 2026 Bluenochian <33797102+Bluenochian@users.noreply.github.com> - 1.0.1-1
+- Fix session startup and browser profile recovery reporting
 * Wed Nov 11 2026 Bluenochian <33797102+Bluenochian@users.noreply.github.com> - 1.0-1
 - Package browser extensions, desktop integration, and encrypted vault support

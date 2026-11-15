@@ -71,6 +71,9 @@ def cmd_toggle(args):
         active = res["active"]
         state_str = f"{PURPLE_BOLD}SHIELD ACTIVE (PROTECTED){RESET}" if active else f"{AMBER_BOLD}STANDBY (RESTORED){RESET}"
         print(f"{VIOLET}✦{RESET} [Veil] State changed: {state_str}")
+        if res.get("warnings"):
+            print("Some browser profiles couldn't be handled: " + ", ".join(res["warnings"]), file=sys.stderr)
+            return 2
     else:
         print(f"{RED_BOLD}Error: Veil daemon is not running; protection was not changed. Start `veil tray` first.{RESET}", file=sys.stderr)
         return 1
@@ -349,67 +352,126 @@ def cmd_sound(args):
 
 
 def cmd_autostart(args):
-    autostart_dir = Path.home() / ".config" / "autostart"
-    autostart_dir.mkdir(parents=True, exist_ok=True)
-    desktop_file = autostart_dir / "veil.desktop"
-
-    systemd_dir = Path.home() / ".config" / "systemd" / "user"
-    systemd_dir.mkdir(parents=True, exist_ok=True)
-    service_file = systemd_dir / "veil.service"
-
     import shutil
-    import shlex
-    user_bin = Path.home() / ".local" / "bin" / "veil"
-    installed = shutil.which("veil")
-    if user_bin.is_file() and os.access(user_bin, os.X_OK):
-        launch_target = str(user_bin)
-    elif installed:
-        launch_target = installed
-    else:
-        launch_target = f"{shlex.quote(sys.executable)} -m veil.cli"
+    import subprocess
 
-    if args.enable:
-        desktop_content = f"""[Desktop Entry]
-Type=Application
-Name=Veil
-Comment=Veil for Linux
-Exec={launch_target} tray
-Icon=veil
-Terminal=false
-Categories=Utility;Security;
-Hidden=false
-NoDisplay=false
-X-GNOME-Autostart-enabled=true
-"""
-        desktop_file.write_text(desktop_content, encoding="utf-8")
+    home = Path.home()
+    desktop_file = home / ".config/autostart/veil.desktop"
+    service_file = home / ".config/systemd/user/veil.service"
+    user_bin = home / ".local/bin/veil"
+    launch_target = str(user_bin) if user_bin.is_file() else shutil.which("veil")
+    if not launch_target:
+        print("Veil isn't installed yet. Run scripts/install.sh first.", file=sys.stderr)
+        return 1
 
-        service_content = f"""[Unit]
-Description=Veil Universal Privacy Daemon
+    def systemd_available():
+        if not shutil.which("systemctl"):
+            return False
+        try:
+            check = subprocess.run(
+                ["systemctl", "--user", "show-environment"],
+                capture_output=True, timeout=3, check=False
+            )
+            return check.returncode == 0
+        except (OSError, subprocess.TimeoutExpired):
+            return False
+
+    def systemctl(*flags):
+        try:
+            return subprocess.run(["systemctl", "--user", *flags],
+                                  capture_output=True, timeout=10, check=False).returncode == 0
+        except (OSError, subprocess.TimeoutExpired):
+            return False
+
+    # This is the XDG desktop entry's startup command. Both startup paths
+    # start the same systemd unit; neither launches a second tray process.
+    if getattr(args, "start", False):
+        if service_file.exists() and systemd_available():
+            vars_to_import = [name for name in (
+                "DISPLAY", "WAYLAND_DISPLAY", "XAUTHORITY", "XDG_CURRENT_DESKTOP",
+                "XDG_SESSION_TYPE", "DBUS_SESSION_BUS_ADDRESS",
+            ) if name in os.environ]
+            if vars_to_import:
+                systemctl("import-environment", *vars_to_import)
+            if not systemctl("start", "veil.service"):
+                print("Could not start veil.service; check journalctl --user -u veil.service.", file=sys.stderr)
+                return 1
+            return 0
+        # No user systemd manager here; let the ordinary desktop entry handle it.
+        subprocess.Popen([launch_target, "tray"], start_new_session=True,
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                         stderr=subprocess.DEVNULL)
+        return 0
+
+    if getattr(args, "enable", False):
+        desktop_file.parent.mkdir(parents=True, exist_ok=True)
+        service_file.parent.mkdir(parents=True, exist_ok=True)
+        # Using a quoted executable path matters when HOME contains spaces.
+        escaped = launch_target.replace("%", "%%").replace('"', '\\"')
+        service_file.write_text(f"""[Unit]
+Description=Veil desktop companion
 After=graphical-session.target
+PartOf=graphical-session.target
 
 [Service]
 Type=simple
-ExecStart={launch_target} tray
+ExecStart=\"{escaped}\" tray
 Restart=on-failure
-RestartSec=3
+RestartSec=3s
+Environment=PYTHONUNBUFFERED=1
+Environment=KSNI_NO_DBUSMENU=1
 
 [Install]
-WantedBy=default.target
-"""
-        service_file.write_text(service_content, encoding="utf-8")
-        print(f"{GREEN_BOLD}✓ Desktop autostart and service configured successfully!{RESET}")
-        print(f"  + Desktop autostart: {desktop_file}")
-        print(f"  + Systemd service:   {service_file}")
+WantedBy=graphical-session.target
+""", encoding="utf-8")
+        managed = systemd_available() and systemctl("daemon-reload") and systemctl("enable", "veil.service")
+        if managed:
+            # The desktop entry is a fallback trigger, *not* a second tray.
+            # It also imports the graphical session environment on KDE.
+            startup_command = f'"{launch_target}" autostart --start'
+            from veil.ipc_server import IPCClient
+            daemon = IPCClient()
+            running = daemon.connect(timeout=0.2)
+            daemon.close()
+            if not running:
+                # No GUI session on a headless install? Leave it enabled for login.
+                vars_to_import = [name for name in ("DISPLAY", "WAYLAND_DISPLAY", "XAUTHORITY", "XDG_CURRENT_DESKTOP", "XDG_SESSION_TYPE", "DBUS_SESSION_BUS_ADDRESS") if name in os.environ]
+                if vars_to_import:
+                    systemctl("import-environment", *vars_to_import)
+                if (os.environ.get("WAYLAND_DISPLAY") or os.environ.get("DISPLAY")) and not systemctl("start", "veil.service"):
+                    print("Autostart enabled; tray can be started on your next login.")
+            print("Veil will use the user systemd service at login (with crash recovery).")
+        else:
+            # Systems without a user systemd session can still use XDG autostart.
+            startup_command = f'"{launch_target}" tray'
+            print("No working user systemd session; using desktop autostart instead.")
+        desktop_file.write_text(f"""[Desktop Entry]
+Type=Application
+Name=Veil
+Comment=Veil for Linux
+Exec={startup_command}
+Icon=veil
+Terminal=false
+Categories=Utility;Security;
+X-GNOME-Autostart-enabled=true
+""", encoding="utf-8")
+        return 0
 
-    elif args.disable:
-        if desktop_file.exists():
-            desktop_file.unlink()
-        if service_file.exists():
-            service_file.unlink()
-        print(f"{LILAC}✓ Autostart disabled.{RESET}")
-    else:
-        status = "ENABLED" if desktop_file.exists() else "DISABLED"
-        print(f"Autostart is currently: {PURPLE_BOLD}{status}{RESET}")
+    if getattr(args, "disable", False):
+        if systemd_available():
+            # Disable startup, but leave today's tray alone until the user quits.
+            systemctl("disable", "veil.service")
+        desktop_file.unlink(missing_ok=True)
+        service_file.unlink(missing_ok=True)
+        if systemd_available():
+            systemctl("daemon-reload")
+        print("Veil autostart disabled. The current session wasn't stopped.")
+        return 0
+
+    desktop = desktop_file.exists()
+    unit = service_file.exists() and systemd_available()
+    print("Veil autostart:", "systemd + desktop trigger" if unit and desktop else "desktop" if desktop else "disabled")
+    return 0
 
 
 def cmd_rules(args):
@@ -745,6 +807,7 @@ def main():
     auto_p = subparsers.add_parser("autostart", help="Manage autostart configuration")
     auto_p.add_argument("--enable", action="store_true", help="Enable autostart on login")
     auto_p.add_argument("--disable", action="store_true", help="Disable autostart on login")
+    auto_p.add_argument("--start", action="store_true", help=argparse.SUPPRESS)
 
     subparsers.add_parser("browsers", help="List all detected browsers and profiles")
     subparsers.add_parser("install-extension", help="Install native messaging manifests")

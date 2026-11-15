@@ -32,7 +32,7 @@ All the terminal commands start with `veil`. Commands that switch protection nee
 | `veil sanitize` | Handle supported clipboard content | Feature-dependent |
 | `veil shred` | Clean supported temporary browser artifacts | No |
 | `veil sound --enable / --disable` | Toggle sound feedback | No |
-| `veil autostart --enable / --disable` | Toggle desktop autostart | No |
+| `veil autostart --enable / --disable` | Manage desktop autostart and user service | No |
 | `veil benchmark` | Run a local 10,000-query classifier diagnostic | No |
 | `veil completions bash / zsh` | Print completion definitions | No |
 
