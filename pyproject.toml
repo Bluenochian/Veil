@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "veil"
+version = "1.0"
+description = "Linux browser privacy companion"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "LicenseRef-PolyForm-Noncommercial-1.0.0"
+license-files = ["LICENSE"]
+authors = [
+    {name = "Bluenochian"}
+]
+keywords = ["privacy", "linux", "kde", "gnome", "wayland", "workspace-privacy", "browser-extension", "native-messaging", "desktop-privacy"]
+classifiers = [
+    "Environment :: X11 Applications :: Qt",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Desktop Environment :: K Desktop Environment (KDE)",
+    "Topic :: Utilities"
+]
+dependencies = [
+    "cryptography>=41.0.0",
+    "PySide6>=6.5.0"
+]
+
+[project.scripts]
+veil = "veil.cli:main"
+veil-native-host = "veil.native_host:run_bridge"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["veil*"]
+
+[tool.setuptools.package-data]
+"veil.data" = [".gitkeep", "*.db"]
+"veil" = ["data/*.db"]

@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Veil Privacy Companion",
+  "version": "1.0",
+  "description": "Local-first browser visibility control for Linux desktops.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "veil@privacy.shield",
+      "strict_min_version": "109.0"
+    }
+  },
+  "permissions": [
+    "bookmarks",
+    "tabs",
+    "nativeMessaging",
+    "storage"
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "action": {
+    "default_title": "Veil Privacy Companion"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

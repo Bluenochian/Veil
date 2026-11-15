@@ -1,0 +1,19 @@
+name: Feature request
+description: Propose a change to a supported Veil workflow
+title: "[Feature] "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+  - type: textarea
+    id: limitations
+    attributes:
+      label: Browser/desktop constraints

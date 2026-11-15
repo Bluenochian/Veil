@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#130d1b">
+<title>Veil</title>
+<link rel="icon" id="veil-favicon" type="image/png" sizes="48x48" href="icons/icon48.png">
+<link rel="stylesheet" href="paused.css">
+</head>
+<body data-mode="on">
+<main class="scene" aria-label="Veil privacy pause screen">
+<div class="particles" id="particles" aria-hidden="true"></div>
+<svg class="horizon horizon-on" viewBox="0 0 1920 700" preserveAspectRatio="none" aria-hidden="true">
+<defs><linearGradient id="landGradientOn" x1="0" y1="0" x2="0" y2="1">
+ <stop class="land-top" offset="0%" stop-color="#39204f"/>
+ <stop class="land-mid" offset="48%" stop-color="#291839"/>
+ <stop class="land-bottom" offset="100%" stop-color="#170e22"/>
+</linearGradient>
+<clipPath id="dome-area-on"><path d="M -60 690 Q 960 120 1980 690 L 1980 960 L -60 960 Z"/></clipPath></defs>
+<path class="land" d="M -60 690 Q 960 120 1980 690 L 1980 960 L -60 960 Z"/>
+<g clip-path="url(#dome-area-on)"><ellipse class="current one" cx="720" cy="730" rx="740" ry="270"/><ellipse class="current two" cx="1450" cy="840" rx="600" ry="260"/></g>
+<path class="rim-soft" d="M -60 690 Q 960 120 1980 690"/>
+<path class="rim" d="M -60 690 Q 960 120 1980 690"/>
+</svg>
+<svg class="horizon horizon-off" viewBox="0 0 1920 700" preserveAspectRatio="none" aria-hidden="true">
+<defs><linearGradient id="landGradientOff" x1="0" y1="0" x2="0" y2="1">
+ <stop class="land-top" offset="0%" stop-color="#512e28"/>
+ <stop class="land-mid" offset="48%" stop-color="#321f20"/>
+ <stop class="land-bottom" offset="100%" stop-color="#1c1115"/>
+</linearGradient>
+<clipPath id="dome-area-off"><path d="M -60 690 Q 960 120 1980 690 L 1980 960 L -60 960 Z"/></clipPath></defs>
+<path class="land" d="M -60 690 Q 960 120 1980 690 L 1980 960 L -60 960 Z"/>
+<g clip-path="url(#dome-area-off)"><ellipse class="current one" cx="720" cy="730" rx="740" ry="270"/><ellipse class="current two" cx="1450" cy="840" rx="600" ry="260"/></g>
+<path class="rim-soft" d="M -60 690 Q 960 120 1980 690"/>
+<path class="rim" d="M -60 690 Q 960 120 1980 690"/>
+</svg>
+<section class="hero">
+ <div class="logo" aria-hidden="true"><img class="emblem on" data-src="icons/emblem-on.png" decoding="async" alt=""><img class="emblem off" data-src="icons/horizon-off.png" decoding="async" alt=""></div>
+ <div class="headline-stack" aria-live="polite" aria-atomic="true">
+  <h1 class="copy-on">Page paused</h1><h1 class="copy-off" aria-hidden="true">Ready to reveal</h1>
+ </div>
+ <div class="description-stack">
+  <p class="description copy-on">This tab is hidden until Veil is switched off.</p>
+  <p class="description copy-off" aria-hidden="true">Select Reveal to return to the page you were viewing.</p>
+ </div>
+ <div class="status-stack" aria-live="polite" aria-atomic="true">
+  <div class="status copy-on">CONCEALMENT ENGAGED</div>
+  <div class="status copy-off" aria-hidden="true">REVEAL ON DEMAND</div>
+ </div>
+ <div class="reveal-area" id="reveal-area" inert aria-hidden="true">
+  <button type="button" class="reveal-button" id="reveal-button" aria-label="Reveal original tab">
+   <span class="reveal-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.2 12s3.5-6 9.8-6 9.8 6 9.8 6-3.5 6-9.8 6-9.8-6-9.8-6Z"/><circle cx="12" cy="12" r="2.9"/></svg></span>
+   <span class="reveal-label">Reveal</span>
+   <span class="reveal-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13m-5-5 5 5-5 5"/></svg></span>
+  </button>
+  <p class="reveal-feedback" id="reveal-feedback" role="status" aria-live="polite"></p>
+ </div>
+</section>
+</main>
+<script src="paused.js"></script>
+</body></html>

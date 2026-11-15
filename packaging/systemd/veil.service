@@ -1,0 +1,16 @@
+[Unit]
+Description=Veil desktop service
+Documentation=https://github.com/Bluenochian/Veil
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/veil tray
+Restart=on-failure
+RestartSec=3
+Environment=PYTHONUNBUFFERED=1
+Environment=KSNI_NO_DBUSMENU=1
+
+[Install]
+WantedBy=graphical-session.target

@@ -1,0 +1,3 @@
+packaging/desktop/veil.desktop usr/share/applications
+packaging/systemd/veil.service usr/lib/systemd/user
+assets/icons/veil.png usr/share/pixmaps

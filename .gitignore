@@ -1,0 +1,37 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+*.veilvault
+*.log
+
+# Local development and private configuration
+.venv/
+.env
+.env.*
+!.env.example
+.coverage
+htmlcov/
+.DS_Store
+
+# Only the verified distributable domain index is tracked
+veil/data/*.db
+!veil/data/adult_domains.db

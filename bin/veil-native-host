@@ -1,0 +1,17 @@
+#!/usr/bin/env python3
+"""
+Veil Native Messaging Host Bridge
+Standard I/O protocol bridge communicating with Chromium and Firefox extensions.
+"""
+import os
+import sys
+
+# Add package root to sys.path
+package_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if package_root not in sys.path:
+    sys.path.insert(0, package_root)
+
+from veil.native_host import run_bridge
+
+if __name__ == "__main__":
+    run_bridge()
