@@ -9,7 +9,7 @@ Pretty simple on paper. Famous last words.
 ## What's actually in here
 
 - **One-click ON, password-protected OFF**, through the tray or CLI. The desktop service checks the password too, so another way of sending the command won't skip it.
-- **Chrome-family and Firefox support**, with their own background-script loading paths. Browser-store signing and real-world compatibility still vary.
+- **Chrome-family and Firefox support**, with their own background-script loading paths. Firefox add-ons loaded through `about:debugging` are temporary and disappear when Firefox restarts; signed store versions aren't included here.
 - **Encrypted recovery records**, native messaging and a local daemon. No cloud account needed.
 - **Local matching rules** for sensitive destinations, plus allowlists and blocklists.
 - **Batched tab operations** for people with an unreasonable number of tabs open. I'm not judging.
