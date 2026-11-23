@@ -45,6 +45,8 @@ jobs:
         run: node tests/browser_extension_smoke.cjs
       - name: Browser scaling simulation
         run: node tests/browser_scale.cjs
+      - name: Media guard smoke simulation
+        run: node tests/media_guard_smoke.cjs
       - name: JavaScript syntax
         run: |
           find browser-extension -type f -name '*.js' -print0 | xargs -0 -n1 node --check
