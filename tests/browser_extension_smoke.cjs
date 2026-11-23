@@ -183,6 +183,21 @@ async function test(browser) {
   assert(!pausedURL.includes('pornhub.com'), 'Original URL must never appear in paused address bar');
   assert.equal(historyActions.length, 0, 'Live browser history must remain untouched');
 
+  // Media policy comes from the same classifier, including the allowlist.
+  async function mediaPolicy(url) {
+    return new Promise(resolve => {
+      listeners.runtimeMessage({ type: 'VEIL_MEDIA_POLICY' }, { url }, resolve);
+    });
+  }
+  assert.equal((await mediaPolicy(original)).block, true);
+  listeners.nativeMessage({ type: 'state', active: true,
+    rules: { whitelist: ['*.pornhub.com'], blacklist: [] } });
+  assert.equal((await mediaPolicy(original)).block, false, 'Allowlist overrides media guard');
+  listeners.nativeMessage({ type: 'state', active: true,
+    rules: { whitelist: [], blacklist: [] } });
+  assert.equal((await mediaPolicy('https://github.com/project')).block, false);
+
+
   // Rapid OFF -> ON while an async bookmark creation is running.
   // Its newly-created bookmark must be rolled back, leaving the original
   // encrypted vault record intact rather than doubling the backup entries.

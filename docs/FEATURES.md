@@ -39,3 +39,11 @@ Batch operations reduce per-tab IPC overhead when many tabs require a state tran
 ## Accessibility and UX
 
 The browser placeholder includes a visible Reveal action. Desktop accessibility depends on Qt, the system tray implementation, focus handling, desktop compositing, and browser UI rendering. Accessibility reports are welcome through GitHub issues.
+
+## Accidental audio
+
+Some sites start playing before the extension can move the tab to its pause page. The old media blocker tried to patch playback on practically every website, which is more trouble than it's worth.
+
+Veil now asks its existing tab classifier before quieting a page. It only pauses audio and video while protection is ON and the current URL matches your rules. Your allowlist still wins. When protection turns OFF, it restores the media elements' original mute and autoplay settings. Ordinary sites aren't touched.
+
+This needs browser page access, so the extension will request it when you install or update it. It reduces the chance of a surprise noise; it can't guarantee that not a single frame or sound sample gets through before the browser starts the script.

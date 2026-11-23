@@ -531,6 +531,12 @@ async function revealTab(sender) {
 }
 
 veilApi.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg?.type === "VEIL_MEDIA_POLICY") {
+    stateReady.then(() => sendResponse({
+      block: Boolean(isVeilActive && sender?.url && isAdult(sender.url))
+    }), () => sendResponse({ block: false }));
+    return true;
+  }
   if (msg?.type !== "VEIL_REVEAL_TAB") return;
   revealTab(sender).then(sendResponse, (error) => {
     sendResponse({ ok: false, error: error?.message || "Could not reopen the original page. Try again." });

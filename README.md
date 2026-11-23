@@ -29,7 +29,7 @@
 
 I made Veil because I wanted a way to get some tabs and bookmarks out of sight, then bring them back without rebuilding my browser session from memory.
 
-It runs as a Linux tray app with an extension for Chromium-based browsers or Firefox. The extension swaps matching tabs for a local pause page. Veil keeps their original destinations in an encrypted vault on your machine. Matching uses a bundled offline domain list, URL/title checks, and rules you can change yourself.
+It runs as a Linux tray app with an extension for Chromium-based browsers or Firefox. The extension swaps matching tabs for a local pause page. It also tries to quiet video and audio on matching pages while that switch happens, so a tab doesn't suddenly start blaring. Veil keeps their original destinations in an encrypted vault on your machine. Matching uses a bundled offline domain list, URL/title checks, and rules you can change yourself.
 
 **ON is one click. OFF needs your unlock password.** It doesn't erase browser history or make you anonymous. And the extension and desktop service both need to be running; an active tray icon by itself doesn't mean every browser is covered.
 
