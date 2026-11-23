@@ -191,7 +191,7 @@ async function test(browser) {
   }
   assert.equal((await mediaPolicy(original)).block, true);
   listeners.nativeMessage({ type: 'state', active: true,
-    rules: { whitelist: ['pornhub.com'], blacklist: [] } });
+    rules: { whitelist: ['*.pornhub.com'], blacklist: [] } });
   assert.equal((await mediaPolicy(original)).block, false, 'Allowlist overrides media guard');
   listeners.nativeMessage({ type: 'state', active: true,
     rules: { whitelist: [], blacklist: [] } });
